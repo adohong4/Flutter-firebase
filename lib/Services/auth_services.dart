@@ -59,4 +59,9 @@ class AuthServices {
       return e.toString();
     }
   }
+
+  //function to handle user logout
+  logOut() async {
+    _auth.signOut();
+  }
 }

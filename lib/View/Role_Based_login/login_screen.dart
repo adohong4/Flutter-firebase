@@ -1,8 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:flutter_project/View/home_screen.dart';
-import 'package:flutter_project/View/signup_screen.dart';
+import 'package:flutter_project/View/Role_Based_login/Admin/admin_home_screen.dart';
+import 'package:flutter_project/View/Role_Based_login/User/user_app_first_screen.dart';
+import 'package:flutter_project/View/Role_Based_login/signup_screen.dart';
 import 'package:flutter_project/Services/auth_services.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -35,12 +36,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (result == 'ADMIN') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const AdminScreen()),
+        MaterialPageRoute(builder: (_) => const AdminHomeScreen()),
       );
     } else if (result == 'USER') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const UserScreen()),
+        MaterialPageRoute(builder: (_) => const UserAppFirstScreen()),
       );
     } else {
       // Handle error (e.g., show error message)
