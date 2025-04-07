@@ -1,4 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_project/Services/auth_services.dart';
 import 'package:flutter_project/View/login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -12,6 +15,42 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
+  String selectedRole = "USER";
+  bool isLoading = false; // to show loading indicator when signing up
+  bool isPasswordHidden = false; // to toggle password visibility
+
+  //instance of AuthServices to handle authentication
+  final AuthServices _authServices = AuthServices();
+  void _signup() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    String? result = await _authServices.signup(
+      name: nameController.text,
+      email: emailController.text,
+      password: passwordController.text,
+      role: selectedRole,
+    );
+    setState(() {
+      isLoading = false;
+    });
+    if (result == null) {
+      // Handle successful signup (e.g., navigate to home screen)
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Signup successful!")));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } else {
+      // Handle error (e.g., show error message)
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Signup failed $result")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,17 +85,28 @@ class _SignupScreenState extends State<SignupScreen> {
             // input field for password
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Password",
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isPasswordHidden = !isPasswordHidden;
+                    });
+                  },
+                  icon: Icon(
+                    isPasswordHidden ? Icons.visibility_off : Icons.visibility,
+                  ),
+                ),
               ),
-              obscureText: true,
+              obscureText: !isPasswordHidden,
             ),
             const SizedBox(height: 20),
 
             // dropdown for selecting the role
             DropdownButtonFormField(
-              decoration: InputDecoration(
+              value: selectedRole,
+              decoration: const InputDecoration(
                 labelText: "Role",
                 border: OutlineInputBorder(),
               ),
@@ -64,21 +114,25 @@ class _SignupScreenState extends State<SignupScreen> {
                   ["ADMIN", "USER"].map((role) {
                     return DropdownMenuItem(value: role, child: Text(role));
                   }).toList(),
-              onChanged: (String? newValue) {},
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedRole = newValue!;
+                });
+              },
             ),
             const SizedBox(height: 20),
 
             //sign up button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Handle login logic here
-                },
-                child: const Text("Sign Up"),
-              ),
-            ),
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _signup,
+                    child: const Text("Sign Up"),
+                  ),
+                ),
             const SizedBox(height: 15),
 
             Row(

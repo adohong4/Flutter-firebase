@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_project/View/home_screen.dart';
 import 'package:flutter_project/View/signup_screen.dart';
+import 'package:flutter_project/Services/auth_services.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +15,40 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool isPasswordHidden = false;
+  bool isLoading = false; // to show loading indicator when signing up
+
+  final AuthServices _authServices = AuthServices();
+  void login() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    // Call your login function here and handle the result
+    String? result = await _authServices.login(
+      email: emailController.text,
+      password: passwordController.text,
+    );
+    setState(() {
+      isLoading = false;
+    });
+    if (result == 'ADMIN') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminScreen()),
+      );
+    } else if (result == 'USER') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const UserScreen()),
+      );
+    } else {
+      // Handle error (e.g., show error message)
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Login failed $result")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,25 +74,37 @@ class _LoginScreenState extends State<LoginScreen> {
               // input field for password
               TextField(
                 controller: passwordController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Password",
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isPasswordHidden = !isPasswordHidden;
+                      });
+                    },
+                    icon: Icon(
+                      isPasswordHidden
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                  ),
                 ),
-                obscureText: true,
+                obscureText: !isPasswordHidden,
               ),
               const SizedBox(height: 20),
 
               //login button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle login logic here
-                  },
-                  child: const Text("Login"),
-                ),
-              ),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: login,
+                      child: const Text("Login"),
+                    ),
+                  ),
               const SizedBox(height: 15),
 
               Row(
